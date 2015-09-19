@@ -30,7 +30,12 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
-
+/**
+ * parameters
+ * value is the predicate for the enforce service, named value so that you don't have to name it
+ * failure is the code to run if the predicate returns false, if not specified, the default for the enforcerService is used.
+ * success the code to run if the predicate returns true, if not specified, the default for the enforcerService is used.
+ */
 @Retention(RetentionPolicy.SOURCE)
 @Target([ElementType.METHOD])
 @GroovyASTTransformationClass("com.virtualdogbert.ast.EnforceASTTransformation")

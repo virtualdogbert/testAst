@@ -39,7 +39,16 @@ import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
 /**
- * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService
+ * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService.
+ *
+ * The first closure is value, just so that the transform can be called without naming the parameter.
+ * If your specifying two or more closures you will have to specify there names in the annotation call.
+ * Examples:
+ * @Enforce ( { true})
+ * @Enforce ( value = { true }, failure = { println "nice" })
+ * @Enforce ( value = { true }, failure = { println "nice" }, success = { println "not nice" })
+ * @Enforce ( value = { false }, failure = { println "not nice" }, success = { println "nice" })
+ *
  */
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class EnforceASTTransformation extends AbstractASTTransformation {
