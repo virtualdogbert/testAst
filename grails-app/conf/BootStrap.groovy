@@ -21,12 +21,33 @@
  * https://github.com/grails-plugins/grails-redis/tree/master/src/main/groovy/grails/plugins/redis
  */
 
+
+import com.security.DomainRole
+import com.security.Role
+import com.security.User
+import com.security.UserRole
 import com.virtualdogbert.ast.Enforce
 
 class BootStrap {
     def enforcerService
 
     def init    = { servletContext ->
+        def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
+        def userRole = new Role('ROLE_USER').save(flush: true, failOnError: true)
+
+        def testUser = new User(username: 'me', password: 'password').save(flush: true, failOnError: true)
+
+        UserRole.create testUser, adminRole, true
+        Sprocket sprocket = new Sprocket(material: 'metal')
+        sprocket.save(failOnError: true)
+
+        DomainRole objectRole = new DomainRole(domainName: 'Sprocket', objectId: sprocket.id, role: 'owner')
+        objectRole.save()
+
+        enforcerService.enforce({ hasObjectRole('owner', 'Sprocket', sprocket.id, testUser) })
+
+        enforcerService.enforce({ hasRole('ROLE_ADMIN', testUser) })
+
         println 'test method 1'
         testMethod()
         println 'test method 2'
