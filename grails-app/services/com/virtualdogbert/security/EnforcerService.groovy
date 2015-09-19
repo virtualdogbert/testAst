@@ -23,9 +23,10 @@ import grails.transaction.Transactional
 import grails.util.Environment
 
 @Transactional
-class EnforcerService implements RoleTrait,ObjectRoleTrait{
+class EnforcerService implements RoleTrait,DomainRoleTrait{
 
     def grailsApplication
+    def springSecurityService
 
     def enforce(Closure predicate, Closure failure = { throw new Exception("Access Denied") }, Closure success = { return true }) {
 
