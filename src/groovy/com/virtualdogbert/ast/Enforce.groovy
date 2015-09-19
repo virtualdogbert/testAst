@@ -12,7 +12,7 @@ import java.lang.annotation.Target
 @Target([ElementType.METHOD])
 @GroovyASTTransformationClass("com.virtualdogbert.ast.EnforceASTTransformation")
 public @interface Enforce {
-    Class value() default {false};
-    Class failure() default {true};
-    Class success() default {true};
+    Class value()
+    Class failure()
+    Class success()
 }
