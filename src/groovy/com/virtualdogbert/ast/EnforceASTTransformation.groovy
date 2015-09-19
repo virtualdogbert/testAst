@@ -24,6 +24,7 @@
 package com.virtualdogbert.ast
 
 import grails.util.Holders
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
@@ -50,6 +51,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
  * @Enforce ( value = { false }, failure = { println "not nice" }, success = { println "nice" })
  *
  */
+@CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class EnforceASTTransformation extends AbstractASTTransformation {
 
@@ -77,9 +79,9 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
     }
 
     private List getParamsList(Map members) {
-        Expression value = members.value
-        Expression failure = members.failure
-        Expression success = members.success
+        Expression value = (Expression) members.value
+        Expression failure = (Expression) members.failure
+        Expression success = (Expression) members.success
         List paramsList = []
 
         if (value) {
