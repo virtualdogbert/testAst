@@ -52,7 +52,8 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
             ClassNode beforeNode = new ClassNode(Enforce.class)
 
             for (AnnotationNode annotationNode : methodNode.getAnnotations(beforeNode)) {
-                ListExpression params = new ListExpression(annotationNode.members.collect{key,value-> value})
+
+                ListExpression params = new ListExpression(getParamsList(annotationNode.members))
                 BlockStatement methodBody = (BlockStatement) methodNode.getCode()
                 List statements = methodBody.getStatements()
                 statements.add(0, createEnforcerCall(params))
@@ -64,6 +65,26 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
                 scopeVisitor.visitClass(it)
             }
         }
+    }
+
+    private List getParamsList(Map members) {
+        Expression value = members.value
+        Expression failure = members.failure
+        Expression success = members.success
+        List paramsList = []
+
+        if (value) {
+            paramsList << value
+        }
+
+        if (failure) {
+            paramsList << failure
+        }
+
+        if (success) {
+            paramsList << success
+        }
+        return paramsList
     }
 
     private Statement createEnforcerCall(ListExpression params) {
