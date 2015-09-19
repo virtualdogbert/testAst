@@ -19,5 +19,15 @@
 
 package com.virtualdogbert.security
 
+import com.security.User
+
 trait RoleTrait {
+
+    Boolean hasRole(String role, User user = null){
+        if(!user){
+            user = springSecurityService.currentUser
+        }
+
+        role in user.authorities*.authority
+    }
 }
