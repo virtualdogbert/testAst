@@ -3,7 +3,7 @@ package com.security
 /**
  * This is for adding roles at an object level for business rules
  */
-class ObjectRole {
+class DomainRole {
     String role        //The role to apply to the object
     Long   objectId    //The id of the object
     String domainName  //the domain name of the object

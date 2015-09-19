@@ -19,5 +19,24 @@
 
 package com.virtualdogbert.security
 
-trait ObjectRoleTrait {
+import com.security.User
+import com.security.DomainRole
+
+trait DomainRoleTrait {
+
+
+    Boolean hasObjectRole(String role, String domainName, Long id, User user = null) {
+        if (!user) {
+            user = springSecurityService.currentUser
+        }
+
+        Map roleHierarchy = [
+                'owner' : ['owner', 'editor', 'viewer'],
+                'editor': ['editor', 'viewer'],
+                'viewer': ['viewer']
+        ]
+
+        DomainRole objectRole = DomainRole.findByRoleAndDomainNameAndObjectId(role, domainName, id)
+        objectRole.role in roleHierarchy[role]
+    }
 }
