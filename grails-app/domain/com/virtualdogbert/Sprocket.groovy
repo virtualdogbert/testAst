@@ -1,3 +1,4 @@
+package com.virtualdogbert
 /**
  * Just a test domain
  */
