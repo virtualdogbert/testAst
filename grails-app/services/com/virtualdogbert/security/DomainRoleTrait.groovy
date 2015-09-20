@@ -35,8 +35,8 @@ trait DomainRoleTrait {
                 'editor': ['editor', 'viewer'],
                 'viewer': ['viewer']
         ]
+        DomainRole domainRole = DomainRole.where { role == role && domainName == domainName && domainId == id && user == user }.find()
+        domainRole.role in roleHierarchy[role]
 
-        DomainRole objectRole = DomainRole.findByRoleAndDomainNameAndObjectId(role, domainName, id)
-        objectRole.role in roleHierarchy[role]
     }
 }
