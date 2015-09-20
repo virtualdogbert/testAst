@@ -19,13 +19,13 @@
 
 package com.virtualdogbert.security
 
-import com.security.User
 import com.security.DomainRole
+import com.security.User
+import com.virtualdogbert.ast.Enforce
 
 trait DomainRoleTrait {
 
-
-    Boolean hasObjectRole(String role, String domainName, Long id, User user = null) {
+    Boolean hasDomainRole(String role, String domainName, Long id, User user = null) {
         if (!user) {
             user = springSecurityService.currentUser
         }
@@ -37,6 +37,34 @@ trait DomainRoleTrait {
         ]
         DomainRole domainRole = DomainRole.where { role == role && domainName == domainName && domainId == id && user == user }.find()
         domainRole.role in roleHierarchy[role]
+    }
 
+    @Enforce({ hasDomainRole('owner', domainName, id) || haRole('ROLE_ADMIN') })
+    void changeDomainRole(String role, String domainName, Long id, User user = null) {
+        if (!user) {
+            user = springSecurityService.currentUser
+        }
+
+        DomainRole domainRole = DomainRole.where { domainName == domainName && domainId == id && user == user }.find()
+
+        if (domainRole) {
+            domainRole.role = role
+        } else {
+            domainRole = new DomainRole(role: role, domainName: domainName, domainId: id, user: user)
+        }
+
+        domainRole.save()
+    }
+
+    @Enforce({ hasDomainRole('owner', domainName, id) || haRole('ROLE_ADMIN') })
+    void removeDomainRole(String domainName, Long id, User user = null) {
+        if (!user) {
+            user = springSecurityService.currentUser
+        }
+
+        DomainRole domainRole = DomainRole.where { domainName == domainName && domainId == id && user == user }.find()
+        if (domainRole) {
+            domainRole.delete()
+        }
     }
 }
