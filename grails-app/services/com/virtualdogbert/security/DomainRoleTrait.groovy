@@ -36,7 +36,7 @@ trait DomainRoleTrait {
                 'viewer': ['viewer']
         ]
         DomainRole domainRole = DomainRole.where { role == role && domainName == domainName && domainId == id && user == user }.find()
-        domainRole.role in roleHierarchy[role]
+        domainRole?.role in roleHierarchy[role]
     }
 
     @Enforce({ hasDomainRole('owner', domainName, id) || haRole('ROLE_ADMIN') })
@@ -63,6 +63,7 @@ trait DomainRoleTrait {
         }
 
         DomainRole domainRole = DomainRole.where { domainName == domainName && domainId == id && user == user }.find()
+
         if (domainRole) {
             domainRole.delete()
         }
