@@ -30,6 +30,7 @@ import com.virtualdogbert.ast.Enforce
 
 class BootStrap {
     def enforcerService
+    def springSecurityService
 
     def init    = { servletContext ->
         def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
@@ -40,13 +41,16 @@ class BootStrap {
         UserRole.create testUser, adminRole, true
         Sprocket sprocket = new Sprocket(material: 'metal')
         sprocket.save(failOnError: true)
+        springSecurityService.metaClass.currentUser = {-> testUser}
 
-        DomainRole objectRole = new DomainRole(domainName: 'Sprocket', objectId: sprocket.id, role: 'owner')
-        objectRole.save()
+        enforcerService.changeDomainRole('owner', 'Sprocket', sprocket.id, testUser)
 
-        enforcerService.enforce({ hasObjectRole('owner', 'Sprocket', sprocket.id, testUser) })
+        enforcerService.enforce({ hasDomainRole('owner', 'Sprocket', sprocket.id, testUser) })
 
         enforcerService.enforce({ hasRole('ROLE_ADMIN', testUser) })
+
+        enforcerService.removeDomainRole('Sprocket', sprocket.id, testUser)
+        println DomainRole.list() == []
 
         println 'test method 1'
         testMethod()
