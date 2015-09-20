@@ -5,8 +5,9 @@ package com.security
  */
 class DomainRole {
     String role        //The role to apply to the object
-    Long   objectId    //The id of the object
-    String domainName  //the domain name of the object
+    Long   domainId    //The id of the object
+    String domainName  //The domain name of the object
+    User   user        //The user associated with the permission
     Date   dateCreated
     Date   lastUpdated
 
