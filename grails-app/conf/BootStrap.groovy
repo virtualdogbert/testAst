@@ -26,6 +26,7 @@ import com.security.DomainRole
 import com.security.Role
 import com.security.User
 import com.security.UserRole
+import com.virtualdogbert.Sprocket
 import com.virtualdogbert.ast.Enforce
 
 class BootStrap {
@@ -33,80 +34,7 @@ class BootStrap {
     def springSecurityService
 
     def init    = { servletContext ->
-        def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
-        def userRole = new Role('ROLE_USER').save(flush: true, failOnError: true)
-
-        def testUser = new User(username: 'me', password: 'password').save(flush: true, failOnError: true)
-
-        UserRole.create testUser, adminRole, true
-        Sprocket sprocket = new Sprocket(material: 'metal')
-        sprocket.save(failOnError: true)
-        springSecurityService.metaClass.currentUser = {-> testUser}
-
-        enforcerService.changeDomainRole('owner', 'Sprocket', sprocket.id, testUser)
-
-        enforcerService.enforce({ hasDomainRole('owner', 'Sprocket', sprocket.id, testUser) })
-
-        enforcerService.enforce({ hasRole('ROLE_ADMIN', testUser) })
-
-        enforcerService.removeDomainRole('Sprocket', sprocket.id, testUser)
-        println DomainRole.list() == []
-
-        println 'test method 1'
-        testMethod()
-        println 'test method 2'
-        testMethod2()
-        println 'test method 3'
-        testMethod3()
-        println 'test method 4'
-        testMethod4()
-        println 'test method 5'
-        testMethod5()
-        println 'test method 6'
-        testMethod6(5)
-
-        println '****************'
-        println 'test 1'
-        enforcerService.enforce({ true })
-        println 'test 2'
-        enforcerService.enforce({ true }, { println "not nice" })
-        println 'test 3'
-        enforcerService.enforce({ false }, { println "nice" })
-        println 'test 4'
-        enforcerService.enforce({ true }, { println "not nice" }, { println "nice" })
-        println 'test 5'
-        enforcerService.enforce({ false }, { println "nice" }, { println "not nice" })
     }
     def destroy = {
-    }
-
-    @Enforce({ true })
-    def testMethod() {
-        println 'nice'
-    }
-
-    @Enforce(value = { true }, failure = { println "not nice" })
-    def testMethod2() {
-        println 'nice'
-    }
-
-    @Enforce(value = { false }, failure = { println "nice" })
-    def testMethod3() {
-
-    }
-
-    @Enforce(value = { true }, failure = { println "not nice" }, success = { println "nice" })
-    def testMethod4() {
-
-    }
-
-    @Enforce(value = { false }, failure = { println "nice" }, success = { println "not nice" })
-    def testMethod5() {
-
-    }
-
-    @Enforce({ number == 5 })
-    def testMethod6(def number) {
-        println 'nice'
     }
 }
