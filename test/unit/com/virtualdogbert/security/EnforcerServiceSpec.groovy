@@ -4,7 +4,6 @@ import com.security.DomainRole
 import com.security.Role
 import com.security.User
 import com.security.UserRole
-import com.virtualdogbert.Sprocket
 import com.virtualdogbert.ast.Enforce
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.test.mixin.Mock
@@ -16,7 +15,7 @@ import spock.lang.Specification
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 
-@Mock([Role, User, UserRole, Sprocket, DomainRole])
+@Mock([Role, User, UserRole, DomainRole])
 @TestFor(EnforcerService)
 class EnforcerServiceSpec extends Specification {
 
@@ -81,21 +80,19 @@ class EnforcerServiceSpec extends Specification {
     }
 
     //Testing DomainRoleTrait
-    void 'test enforce hasDomainRole(\'owner\', \'Sprocket\', sprocket.id, testUser)'() {
+    void 'test enforce hasDomainRole(\'owner\', \'DomainRole\', DomainRole.id, testUser)'() {
         when:
-            Sprocket sprocket = new Sprocket(material: 'metal')
-            sprocket.save(failOnError: true)
-            service.changeDomainRole('owner', 'Sprocket', sprocket.id, testUser)
-            service.enforce({ hasDomainRole('owner', 'Sprocket', sprocket.id, testUser) })
+            DomainRole domainRole = new DomainRole(role: 'owner', domainName: 'DomainRole', domainId: 10, user: testUser )
+            domainRole.save(failOnError: true)
+            service.changeDomainRole('owner', 'DomainRole', domainRole.id, testUser)
+            service.enforce({ hasDomainRole('owner', 'DomainRole', domainRole.id, testUser) })
         then:
             true
     }
 
-    void 'test fail enforce hasDomainRole(\'owner\', \'Sprocket\', sprocket.id, testUser)'() {
+    void 'test fail enforce hasDomainRole(\'owner\', \'DomainRole\', 1, testUser)'() {
         when:
-            Sprocket sprocket = new Sprocket(material: 'metal')
-            sprocket.save(failOnError: true)
-            service.enforce({ hasDomainRole('owner', 'Sprocket', sprocket.id, testUser) })
+            service.enforce({ hasDomainRole('owner', 'DomainRole', 1, testUser) })
         then:
             thrown Exception
     }
