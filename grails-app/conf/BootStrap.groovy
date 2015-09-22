@@ -22,13 +22,6 @@
  */
 
 
-import com.security.DomainRole
-import com.security.Role
-import com.security.User
-import com.security.UserRole
-import com.virtualdogbert.Sprocket
-import com.virtualdogbert.ast.Enforce
-
 class BootStrap {
     def enforcerService
     def springSecurityService
