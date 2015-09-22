@@ -4,6 +4,7 @@ import com.security.DomainRole
 import com.security.Role
 import com.security.User
 import com.security.UserRole
+import com.virtualdogbert.ast.EnforcerException
 import com.virtualdogbert.ast.Enforce
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.test.mixin.Mock
@@ -47,36 +48,36 @@ class EnforcerServiceSpec extends Specification {
         when:
             service.enforce({ false })
         then:
-            Exception e = thrown()
+            EnforcerException e = thrown()
             e.message == 'Access Denied'
     }
 
-    void 'test enforce { true }, { throw Exception("not nice") }'() {
+    void 'test enforce { true }, { throw new EnforcerException("not nice") }'() {
         when:
-            service.enforce({ true }, { throw Exception("not nice") })
+            service.enforce({ true }, { throw new EnforcerException("not nice") })
         then:
             true
     }
 
-    void 'test enforce { false }, { throw Exception("nice") }'() {
+    void 'test enforce { false }, { throw new EnforcerException("nice") }'() {
         when:
-            service.enforce({ false }, { throw Exception("nice") })
+            service.enforce({ false }, { throw new EnforcerException("nice") })
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
-    void 'test enforce { true }, { throw Exception("not nice")}, { println "nice" }'() {
+    void 'test enforce { true }, { throw new EnforcerException("not nice")}, { println "nice" }'() {
         when:
-            service.enforce({ true }, { throw Exception("not nice") }, { println "nice" })
+            service.enforce({ true }, { throw new EnforcerException("not nice") }, { println "nice" })
         then:
             true
     }
 
-    void 'test enforce { false }, { throw Exception("nice") }, { throw Exception("not nice") }'() {
+    void 'test enforce { false }, { throw new EnforcerException("nice") }, { throw new EnforcerException("not nice") }'() {
         when:
-            service.enforce({ false }, { throw Exception("nice") }, { println("not nice") })
+            service.enforce({ false }, { throw new EnforcerException("nice") }, { println("not nice") })
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
     //Testing DomainRoleTrait
@@ -94,7 +95,7 @@ class EnforcerServiceSpec extends Specification {
         when:
             service.enforce({ hasDomainRole('owner', 'DomainRole', 1, testUser) })
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
      //Testing RoleTrait
@@ -116,7 +117,7 @@ class EnforcerServiceSpec extends Specification {
         when:
             service.enforce({ hasRole('ROLE_SUPER_USER', testUser) })
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
     //Testing Enforce AST transform
@@ -138,7 +139,7 @@ class EnforcerServiceSpec extends Specification {
         when:
             method3()
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
     void 'test method 4'() {
@@ -152,7 +153,7 @@ class EnforcerServiceSpec extends Specification {
         when:
             method5()
         then:
-            thrown Exception
+            thrown EnforcerException
     }
 
     void 'test method 6'() {
@@ -169,24 +170,24 @@ class EnforcerServiceSpec extends Specification {
         println 'nice'
     }
 
-    @Enforce(value = { true }, failure = { throw Exception("not nice") })
+    @Enforce(value = { true }, failure = { throw new EnforcerException("not nice") })
     def method2() {
         println 'nice'
     }
 
-    @Enforce(value = { false }, failure = { throw Exception("nice") })
+    @Enforce(value = { false }, failure = { throw new EnforcerException("nice") })
     def method3() {
-        throw Exception("this shouldn't happen on method3")
+        throw new EnforcerException("this shouldn't happen on method3")
     }
 
-    @Enforce(value = { true }, failure = { throw Exception("not nice") }, success = { println "nice" })
+    @Enforce(value = { true }, failure = { throw new EnforcerException("not nice") }, success = { println "nice" })
     def method4() {
 
     }
 
-    @Enforce(value = { false }, failure = { throw Exception("nice") }, success = { println "not nice" })
+    @Enforce(value = { false }, failure = { throw new EnforcerException("nice") }, success = { println "not nice" })
     def method5() {
-        throw Exception("this shouldn't happen on method5")
+        throw new EnforcerException("this shouldn't happen on method5")
     }
 
     @Enforce({ number == 5 })
