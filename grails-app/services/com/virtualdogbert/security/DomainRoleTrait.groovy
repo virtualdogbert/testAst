@@ -39,8 +39,16 @@ trait DomainRoleTrait {
         domainRole?.role in roleHierarchy[role]
     }
 
-    @Enforce({ hasDomainRole('owner', domainName, id) || haRole('ROLE_ADMIN') })
-    void changeDomainRole(String role, String domainName, Long id, User user = null) {
+    Boolean isCreator(domainObject, user = null) {
+        if (!user) {
+            user = springSecurityService.currentUser
+        }
+
+        domainObject.creator.id == user.id
+    }
+
+    @Enforce({ hasDomainRole('owner', domainObject) || isCreator(domainObject) || haRole('ROLE_ADMIN') })
+    void changeDomainRole(String role, domainObject, User user = null) {
         if (!user) {
             user = springSecurityService.currentUser
         }
