@@ -2,6 +2,7 @@ package com.virtualdogbert.security
 
 import com.security.DomainRole
 import com.security.Role
+import com.security.Sprocket
 import com.security.User
 import com.security.UserRole
 import com.virtualdogbert.ast.EnforcerException
@@ -16,16 +17,17 @@ import spock.lang.Specification
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 
-@Mock([Role, User, UserRole, DomainRole])
+@Mock([Role, User, UserRole, DomainRole, Sprocket])
 @TestFor(EnforcerService)
 class EnforcerServiceSpec extends Specification {
 
-    def testUser
+    def testUser, testUser2
 
     def setup() {
         def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
         def userRole = new Role('ROLE_USER').save(flush: true, failOnError: true)
         testUser = new User(username: 'me', password: 'password').save(flush: true, failOnError: true)
+        testUser2 = new User(username: 'me2', password: 'password').save(flush: true, failOnError: true)
 
         UserRole.create testUser, adminRole, true
         UserRole.create testUser, userRole, true
@@ -84,19 +86,20 @@ class EnforcerServiceSpec extends Specification {
     }
 
     //Testing DomainRoleTrait
-    void 'test enforce hasDomainRole(\'owner\', \'DomainRole\', DomainRole.id, testUser)'() {
+    void 'test enforce hasDomainRole(\'owner\', domainObject, testUser)'() {
         when:
-            DomainRole domainRole = new DomainRole(role: 'owner', domainName: 'DomainRole', domainId: 10, user: testUser )
-            domainRole.save(failOnError: true)
-            service.changeDomainRole('owner', 'DomainRole', domainRole.id, testUser)
-            service.enforce({ hasDomainRole('owner', 'DomainRole', domainRole.id, testUser) })
+            Sprocket sprocket = new Sprocket(material: 'metal', creator: testUser).save(failOnError: true)
+            service.changeDomainRole('owner', sprocket, testUser)
+            service.enforce({ hasDomainRole('owner', sprocket, testUser) })
         then:
             true
     }
 
-    void 'test fail enforce hasDomainRole(\'owner\', \'DomainRole\', 1, testUser)'() {
+    void 'test fail enforce hasDomainRole(\'owner\',domainObject, testUser)'() {
         when:
-            service.enforce({ hasDomainRole('owner', 'DomainRole', 1, testUser) })
+            Sprocket sprocket = new Sprocket(material: 'metal',creator: testUser).save(failOnError: true)
+            service.changeDomainRole('owner', sprocket, testUser)
+            service.enforce({ hasDomainRole('owner', sprocket, testUser2) })
         then:
             thrown EnforcerException
     }
