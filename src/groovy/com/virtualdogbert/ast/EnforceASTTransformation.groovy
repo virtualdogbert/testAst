@@ -72,12 +72,18 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
             }
 
             VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(sourceUnit)
-            sourceUnit.AST.classes.each {
-                scopeVisitor.visitClass(it)
+            sourceUnit.AST.classes.each { ClassNode classNode ->
+                scopeVisitor.visitClass(classNode)
             }
         }
     }
 
+    /**
+         *  extracts the closure parameters from the members map, into a list in the order that the enforcerService's enforce method expects
+         *
+         * @param members The map of members / parameters
+         * @return A list of the closure parameters passed to the annotation
+         */
     private List getParamsList(Map members) {
         Expression value = (Expression) members.value
         Expression failure = (Expression) members.failure
@@ -98,6 +104,12 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
         return paramsList
     }
 
+    /**
+         *  Creates the call to the enforcer service, to be injected, using the list of parameters generated from the get ParamsList
+         *
+         * @param params the list of closure parameters to pass to the enforce method of the enforcer service
+         * @return the statement created for injecting the call to the enforce method of the enforcerService
+         */
     private Statement createEnforcerCall(ListExpression params) {
         ClassNode holder = new ClassNode(Holders.class)
         Expression context = new StaticMethodCallExpression(holder, "getApplicationContext", ArgumentListExpression.EMPTY_ARGUMENTS)
