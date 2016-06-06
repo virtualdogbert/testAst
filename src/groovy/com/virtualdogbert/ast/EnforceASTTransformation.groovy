@@ -38,9 +38,9 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
-
 /**
  * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService.
+ * This can be applied to a method or a class, but the method will take precedence.
  *
  * The first closure is value, just so that the transform can be called without naming the parameter.
  * If your specifying two or more closures you will have to specify there names in the annotation call.
@@ -58,23 +58,49 @@ public class EnforceASTTransformation extends AbstractASTTransformation {
     @Override
     public void visit(ASTNode[] nodes, SourceUnit sourceUnit) {
         if (nodes.length != 2) return
+        ClassNode beforeNode = new ClassNode(Enforce.class)
+
         if (nodes[0] instanceof AnnotationNode && nodes[1] instanceof MethodNode) {
+
             MethodNode methodNode = (MethodNode) nodes[1]
-            ClassNode beforeNode = new ClassNode(Enforce.class)
+            AnnotationNode annotationNode  = methodNode.getAnnotations(beforeNode)[0]
+            ListExpression params = new ListExpression(getParamsList(annotationNode.members))
+            applyToMethod(methodNode, sourceUnit, params)
 
-            for (AnnotationNode annotationNode : methodNode.getAnnotations(beforeNode)) {
+        } else if (nodes[0] instanceof AnnotationNode && nodes[1] instanceof ClassNode) {
 
-                ListExpression params = new ListExpression(getParamsList(annotationNode.members))
-                BlockStatement methodBody = (BlockStatement) methodNode.getCode()
-                List statements = methodBody.getStatements()
-                statements.add(0, createEnforcerCall(params))
-                break
+            ClassNode classNode = (ClassNode) nodes[1]
+            AnnotationNode annotationNode = classNode.getAnnotations(beforeNode)[0]
+            ListExpression params = new ListExpression(getParamsList(annotationNode.members))
+            classNode.methods.each{ MethodNode methodNode ->
+                applyToMethod(methodNode, sourceUnit, params, true)
             }
 
-            VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(sourceUnit)
-            sourceUnit.AST.classes.each { ClassNode classNode ->
-                scopeVisitor.visitClass(classNode)
-            }
+        }
+    }
+
+    /**
+     * This applies the enforce logic to a method node.
+     *
+     * @param methodNode The method node to inject the enforce logic
+     * @param sourceUnit the source unit which is used for fixing the variable scope
+     * @param params the parameter passed into the annotation at the class or method level
+     * @param fromClass If the annotation comes from the class level
+     */
+    private void applyToMethod(MethodNode methodNode, SourceUnit sourceUnit, ListExpression params, boolean fromClass = false) {
+
+        ClassNode beforeNode = new ClassNode(Enforce.class)
+        if (fromClass && methodNode.getAnnotations(beforeNode)[0]) {
+            return //If the annotation is from the class level, but the method node has it's own @Enforce annotation don't apply the class level logic.
+        }
+
+        BlockStatement methodBody = (BlockStatement) methodNode.getCode()
+        List statements = methodBody.getStatements()
+        statements.add(0, createEnforcerCall(params))
+
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(sourceUnit)
+        sourceUnit.AST.classes.each { ClassNode classNode ->
+            scopeVisitor.visitClass(classNode)
         }
     }
 
