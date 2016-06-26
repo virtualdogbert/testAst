@@ -20,6 +20,7 @@
 package com.virtualdogbert.security
 
 import com.security.User
+import grails.plugin.springsecurity.SpringSecurityUtils
 
 /**
  *  This trait is for the EnforcerService, extending it's capability to enforcing user roles, without the verbosity of calling a service.
@@ -35,9 +36,12 @@ trait RoleTrait {
          */
     Boolean hasRole(String role, User user = null){
         if(!user){
-            user = springSecurityService.currentUser
+           return SpringSecurityUtils.ifAllGranted(role)
         }
 
         role in user.authorities*.authority
+        //TODO check this for generate groups
+        //role in user.authorities*.authorities*.authority
+        //role in user.authorities*.authority || role in user.groups.authorities*.authority
     }
 }
