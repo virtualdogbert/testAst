@@ -16,7 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  *
- * Some of the setup is derived from the fllowing grails plugings(Appache Licence)
+ * Some of the setup is derived from the following grails plugings(Appache Licence)
  * https://github.com/groovy/groovy-core/blob/4993b10737881b2491c2daa01526fb15dd889ac5/src/main/org/codehaus/groovy/transform/NewifyASTTransformation.java
  * https://github.com/grails-plugins/grails-redis/tree/master/src/main/groovy/grails/plugins/redis
  */
