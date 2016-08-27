@@ -31,13 +31,13 @@ import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
 /**
- * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService.
- * This can be applied to a method or a class, but the method will take precedence.
+ * The annotation reinforceFilter takes one closure, and filters the return statement of a method based on that closure
+ *
+ * Example:
+ * @ReinforceFilter({ Object o -> (o as List).findResults { it % 2 == 0 ? it : null } })
  *
  * parameters
- * value is the predicate for the enforce service, named value so that you don't have to name it
- * failure is the code to run if the predicate returns false, if not specified, the default for the enforcerService is used.
- * success the code to run if the predicate returns true, if not specified, the default for the enforcerService is used.
+ * value is the filter for the enforce service, named value so that you don't have to name it
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target([ElementType.METHOD])

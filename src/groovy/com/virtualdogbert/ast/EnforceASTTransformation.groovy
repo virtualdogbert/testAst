@@ -39,7 +39,9 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 /**
- * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService.
+ * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService at the
+ * beginning of the method.
+ *
  * This can be applied to a method or a class, but the method will take precedence.
  *
  * The first closure is value, just so that the transform can be called without naming the parameter.

@@ -17,7 +17,7 @@
  *  under the License.
  *
  * Some of the code is derived from the following grails AST transform(Appache Licence)
- * https://github.com/grails/grails-core/blob/master/grails-core/src/main/groovy/org/grails/compiler/injection/GrailsASTUtils.java
+ * https://github.com/grails/grails-core/blob/master/grails-core/src/main/groovy/org/grails/transaction/transform/TransactionalTransform.groovy
  */
 
 package com.virtualdogbert.ast
@@ -42,16 +42,18 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 import java.lang.reflect.Modifier
 
 /**
- * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService.
+ * The annotation enforce takes up to 3 closures can injects a call to the enforce method of the enforcerService
+ * at the end of the method before returning
+ * .
  * This can be applied to a method or a class, but the method will take precedence.
  *
  * The first closure is value, just so that the transform can be called without naming the parameter.
  * If your specifying two or more closures you will have to specify there names in the annotation call.
  * Examples:
- * @Enforce ( { true } )
- * @Enforce ( value = { true } , failure = { println " nice " } )
- * @Enforce ( value = { true } , failure = { println " nice " } , success = { println " not nice " } )
- * @Enforce ( value = { false } , failure = { println " not nice " } , success = { println " nice " } )
+ * @Reinforce ( { true } )
+ * @Reinforce ( value = { true } , failure = { println " nice " } )
+ * @Reinforce ( value = { true } , failure = { println " nice " } , success = { println " not nice " } )
+ * @Reinforce ( value = { false } , failure = { println " not nice " } , success = { println " nice " } )
  *
  */
 @CompileStatic
@@ -88,6 +90,16 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
         }
     }
 
+    /**
+     * Copies the ordinal method to a new one and replaces the ordinal method with a new one that calls  the new method,
+     * then the enforcerService, and then returns
+     *
+     * @param source sourceUnit the source unit which is used for fixing the variable scope
+     * @param classNode the class node used for moving the method, and fixing the variable scope
+     * @param methodNode The method node to inject the enforce logic
+     * @param params the parameter passed into the annotation at the class or method level
+     * @param fromClass If the annotation comes from the class level
+     */
     public static void processVariableScopes(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source)
         if (methodNode == null) {
@@ -118,6 +130,15 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
         processVariableScopes(source, classNode, methodNode)
     }
 
+    /**
+     * This copies a method to a renamed method, so that it can be wrapped.
+     *
+     * @param source sourceUnit the source unit which is used for fixing the variable scope
+     * @param classNode the class node used for making the new copy of the method
+     * @param methodNode the method node to copy and move
+     *
+     * @return a method call expression to the copied old method
+     */
     protected MethodCallExpression moveOriginalCodeToNewMethod(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
         String renamedMethodName = '$Enforcer__' + methodNode.getName()
         Parameter[] newParameters = methodNode.getParameters() ? (copyParameters(methodNode.getParameters() as Parameter[])) : [] as Parameter[]
@@ -167,6 +188,13 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
         originalMethodCall
     }
 
+    /**
+     * This copies the parameters from one method to another
+     *
+     * @param parameterTypes the parameters to copy
+     *
+     * @return The copied parameters
+     */
     private static Parameter[] copyParameters(Parameter[] parameterTypes) {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
