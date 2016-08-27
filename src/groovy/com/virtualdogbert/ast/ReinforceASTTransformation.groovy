@@ -80,7 +80,8 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
             ClassNode classNode = (ClassNode) nodes[1]
             AnnotationNode annotationNode = classNode.getAnnotations(beforeNode)[0]
             ListExpression params = new ListExpression(getParamsList(annotationNode.members))
-            classNode.methods.each { MethodNode methodNode ->
+            List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods())
+            methods.each { MethodNode methodNode ->
                 weaveMethod(sourceUnit, classNode, methodNode, params, true)
             }
 
