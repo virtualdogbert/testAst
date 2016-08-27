@@ -1,7 +1,6 @@
 package com.virtualdogbert.security
 
 import com.security.*
-import com.virtualdogbert.ast.Enforce
 import com.virtualdogbert.ast.EnforcerException
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
@@ -28,9 +27,10 @@ class EnforcerServiceSpec extends Specification {
         UserRole.create testUser2, userRole, true
 
         service.springSecurityService = new Expando()
-        service.springSecurityService.getCurrentUser = {-> testUser }
+        service.springSecurityService.getCurrentUser = { -> testUser }
 
-        grailsApplication.config.enforcer.enabled = true//This enables Enforcer for unit tests because it is turned off by default.
+        //This enables Enforcer for unit tests because it is turned off by default.
+        grailsApplication.config.enforcer.enabled = true
     }
 
     //Testing EnforcerService
@@ -77,7 +77,6 @@ class EnforcerServiceSpec extends Specification {
             thrown EnforcerException
     }
 
-
     // For these tests you'll have to sub out the Sprocket domain for one that is in your application
     //Testing DomainRoleTrait
     void 'test enforce hasDomainRole("owner", domainObject, testUser)'() {
@@ -91,142 +90,32 @@ class EnforcerServiceSpec extends Specification {
 
     void 'test fail enforce hasDomainRole("owner",domainObject, testUser)'() {
         when:
-            Sprocket sprocket = new Sprocket(material: 'metal',creator: testUser).save(failOnError: true)
+            Sprocket sprocket = new Sprocket(material: 'metal', creator: testUser).save(failOnError: true)
             service.changeDomainRole('owner', sprocket, testUser)
             service.enforce({ hasDomainRole('owner', sprocket, testUser2) })
         then:
             thrown EnforcerException
     }
 
-
-     //Testing RoleTrait
-    void 'test enforce hasRole("ROLE_ADMIN", testUser)'(){
+    //Testing RoleTrait
+    void 'test enforce hasRole("ROLE_ADMIN", testUser)'() {
         when:
             service.enforce({ hasRole('ROLE_ADMIN', testUser) })
         then:
             true
     }
 
-    void 'test enforce hasRole("ROLE_USER", testUser)'(){
+    void 'test enforce hasRole("ROLE_USER", testUser)'() {
         when:
             service.enforce({ hasRole('ROLE_USER', testUser) })
         then:
             true
     }
 
-    void 'test enforce hasRole ("ROLE_SUPER_USER", testUser)'(){
+    void 'test enforce hasRole ("ROLE_SUPER_USER", testUser)'() {
         when:
             service.enforce({ hasRole('ROLE_SUPER_USER', testUser) })
         then:
             thrown EnforcerException
-    }
-
-    //Testing Enforce AST transform
-    void 'test method 1'() {
-        when:
-            method1()
-        then:
-            true
-    }
-
-    void 'test method 2'() {
-        when:
-            method2()
-        then:
-            true
-    }
-
-    void 'test method 3'() {
-        when:
-            method3()
-        then:
-            thrown EnforcerException
-    }
-
-    void 'test method 4'() {
-        when:
-            method4()
-        then:
-            true
-    }
-
-    void 'test method 5'() {
-        when:
-            method5()
-        then:
-            thrown EnforcerException
-    }
-
-    void 'test method 6'() {
-        when:
-            method6(5)
-        then:
-            true
-    }
-
-    void 'test class protection'() {
-        setup:
-            TestEnforcer t = new TestEnforcer()
-        when:
-            t.clazzProtectedMethod1()
-        then:
-            thrown EnforcerException
-        when:
-            t.clazzProtectedMethod2()
-        then:
-            thrown EnforcerException
-        when:
-            t.methodProtectedMethod1()
-        then:
-            true
-    }
-
-
-    //Test methods for testing Enforce AST transform
-    @Enforce({ true })
-    def method1() {
-        println 'nice'
-    }
-
-    @Enforce(value = { true }, failure = { throw new EnforcerException("not nice") })
-    def method2() {
-        println 'nice'
-    }
-
-    @Enforce(value = { false }, failure = { throw new EnforcerException("nice") })
-    def method3() {
-        throw new Exception("this shouldn't happen on method3")
-    }
-
-    @Enforce(value = { true }, failure = { throw new EnforcerException("not nice") }, success = { println "nice" })
-    def method4() {
-
-    }
-
-    @Enforce(value = { false }, failure = { throw new EnforcerException("nice") }, success = { println "not nice" })
-    def method5() {
-        throw new Exception("this shouldn't happen on method5")
-    }
-
-    @Enforce({ number == 5 })
-    def method6(number) {
-        println 'nice'
-    }
-
-    @Enforce({ false })
-    class TestEnforcer {
-        @Enforce(value = { false }, failure = { throw new EnforcerException("nice") })
-        def clazzProtectedMethod1() {
-            println 'not nice'
-        }
-
-        def clazzProtectedMethod2() {
-            println 'not nice'
-        }
-
-        @Enforce({ true })
-        def methodProtectedMethod1() {
-            println 'nice'
-        }
     }
 }
