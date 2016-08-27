@@ -1,22 +1,13 @@
 package com.virtualdogbert.security
 
-import com.security.*
 import com.virtualdogbert.ast.EnforcerException
 import com.virtualdogbert.ast.Reinforce
 import com.virtualdogbert.ast.ReinforceFilter
-import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
-
-@Mock([Role, User, UserRole, DomainRole, Sprocket])
 @TestFor(EnforcerService)
 class ReinforceAnnotationSpec extends Specification {
-
-    def testUser, testUser2
 
     def setup() {
         //This enables Enforcer for unit tests because it is turned off by default.
