@@ -35,6 +35,7 @@ import org.codehaus.groovy.classgen.VariableScopeVisitor
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.ErrorCollector
 import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
@@ -100,25 +101,16 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
      * @param params the parameter passed into the annotation at the class or method level
      * @param fromClass If the annotation comes from the class level
      */
-    public static void processVariableScopes(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source)
-        if (methodNode == null) {
-            scopeVisitor.visitClass(classNode)
-        } else {
-            scopeVisitor.prepareVisit(classNode)
-            scopeVisitor.visitMethod(methodNode)
-        }
-    }
-
     protected void weaveMethod(SourceUnit source, ClassNode classNode, MethodNode methodNode, ListExpression params, boolean fromClass = false) {
         ClassNode beforeNode = new ClassNode(Reinforce.class)
         if (fromClass && methodNode.getAnnotations(beforeNode)[0]) {
-            return //If the annotation is from the class level, but the method node has it's own @Reinforce annotation don't apply the class level logic.
+            return
+            //If the annotation is from the class level, but the method node has it's own @Reinforce annotation don't apply the class level logic.
         }
 
         MethodCallExpression originalMethodCall = moveOriginalCodeToNewMethod(source, classNode, methodNode)
         BlockStatement methodBody = new BlockStatement()
-        applyToMethod(methodBody, source, params)
+        applyToMethod(methodBody, params)
 
         if (methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
             methodBody.addStatement(new ReturnStatement(new CastExpression(methodNode.getReturnType(), originalMethodCall)))
@@ -127,7 +119,7 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
         }
 
         methodNode.setCode(methodBody)
-        processVariableScopes(source, classNode, methodNode)
+        GrailsASTUtils.processVariableScopes(source, classNode, methodNode)
     }
 
     /**
@@ -196,19 +188,19 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
      * @return The copied parameters
      */
     private static Parameter[] copyParameters(Parameter[] parameterTypes) {
-        Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
+        Parameter[] newParameterTypes = new Parameter[parameterTypes.length]
         for (int i = 0; i < parameterTypes.length; i++) {
-            Parameter parameterType = parameterTypes[i];
-            ClassNode parameterTypeCN = parameterType.getType();
-            ClassNode newParameterTypeCN = parameterTypeCN.getPlainNodeReference();
+            Parameter parameterType = parameterTypes[i]
+            ClassNode parameterTypeCN = parameterType.getType()
+            ClassNode newParameterTypeCN = parameterTypeCN.getPlainNodeReference()
             if (parameterTypeCN.isUsingGenerics() && !parameterTypeCN.isGenericsPlaceHolder()) {
-                newParameterTypeCN.setGenericsTypes(parameterTypeCN.getGenericsTypes());
+                newParameterTypeCN.setGenericsTypes(parameterTypeCN.getGenericsTypes())
             }
-            Parameter newParameter = new Parameter(newParameterTypeCN, parameterType.getName(), parameterType.getInitialExpression());
-            newParameter.addAnnotations(parameterType.getAnnotations());
-            newParameterTypes[i] = newParameter;
+            Parameter newParameter = new Parameter(newParameterTypeCN, parameterType.getName(), parameterType.getInitialExpression())
+            newParameter.addAnnotations(parameterType.getAnnotations())
+            newParameterTypes[i] = newParameter
         }
-        return newParameterTypes;
+        return newParameterTypes
     }
 
     /**
@@ -219,14 +211,9 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
      * @param params the parameter passed into the annotation at the class or method level
      * @param fromClass If the annotation comes from the class level
      */
-    private void applyToMethod(BlockStatement methodBody, SourceUnit sourceUnit, ListExpression params) {
+    private void applyToMethod(BlockStatement methodBody, ListExpression params) {
         List statements = methodBody.getStatements()
         statements.add(0, createEnforcerCall(params))
-
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(sourceUnit)
-        sourceUnit.AST.classes.each { ClassNode classNode ->
-            scopeVisitor.visitClass(classNode)
-        }
     }
 
     /**
@@ -264,7 +251,7 @@ public class ReinforceASTTransformation extends AbstractASTTransformation {
     private Statement createEnforcerCall(ListExpression params) {
         ClassNode holder = new ClassNode(Holders.class)
         Expression context = new StaticMethodCallExpression(holder, "getApplicationContext", ArgumentListExpression.EMPTY_ARGUMENTS)
-        Expression service = new MethodCallExpression(context, "getBean", new ConstantExpression('enforcerService'));
+        Expression service = new MethodCallExpression(context, "getBean", new ConstantExpression('enforcerService'))
         Expression call = new MethodCallExpression(service, 'enforce', new ArgumentListExpression(params))
         return new ExpressionStatement(call)
     }
