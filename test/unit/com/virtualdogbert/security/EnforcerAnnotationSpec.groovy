@@ -1,19 +1,41 @@
 package com.virtualdogbert.security
 
+import com.security.DomainRole
+import com.security.Role
+import com.security.Sprocket
+import com.security.User
+import com.security.UserRole
 import com.virtualdogbert.ast.Enforce
 import com.virtualdogbert.ast.EnforcerException
+import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 
+@Mock([Role, User, UserRole, DomainRole, Sprocket])
 @TestFor(EnforcerService)
 class EnforcerAnnotationSpec extends Specification {
 
+    User testUser, testUser2
+
     def setup() {
-        //This enables Enforcer for unit tests because it is turned off by default.
-        grailsApplication.config.enforcer.enabled = true
+        def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
+                def userRole = new Role('ROLE_USER').save(flush: true, failOnError: true)
+                testUser = new User(username: 'me', password: 'password').save(flush: true, failOnError: true)
+                testUser2 = new User(username: 'me2', password: 'password').save(flush: true, failOnError: true)
+
+                UserRole.create testUser, adminRole, true
+                UserRole.create testUser, userRole, true
+
+                UserRole.create testUser2, userRole, true
+
+                service.springSecurityService = new Expando()
+                service.springSecurityService.getCurrentUser = { -> testUser }
+
+                //This enables Enforcer for unit tests because it is turned off by default.
+                grailsApplication.config.enforcer.enabled = true
     }
 
 
@@ -143,4 +165,20 @@ class EnforcerAnnotationSpec extends Specification {
         }
     }
 
+    // For these tests you'll have to sub out the Sprocket domain for one that is in your application
+     //Testing DomainRoleTrait
+     void 'test enforce hasDomainRole("owner", domainObject, testUser)'() {
+         when:
+             Sprocket sprocket = new Sprocket(material: 'metal', creator: testUser).save(failOnError: true)
+             service.changeDomainRole('owner', sprocket, testUser)
+             testHasDomainRole(sprocket, testUser)
+         then:
+             true
+     }
+
+
+    @Enforce({ hasDomainRole('owner', sprocket, testUser) })
+    def testHasDomainRole(Sprocket sprocket, User testUser) {
+        return true
+    }
 }

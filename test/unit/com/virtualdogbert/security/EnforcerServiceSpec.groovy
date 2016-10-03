@@ -13,7 +13,7 @@ import spock.lang.Specification
 @TestFor(EnforcerService)
 class EnforcerServiceSpec extends Specification {
 
-    def testUser, testUser2
+    User testUser, testUser2
 
     def setup() {
         def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)

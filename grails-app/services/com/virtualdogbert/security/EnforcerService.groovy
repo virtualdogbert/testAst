@@ -41,7 +41,10 @@ class EnforcerService implements RoleTrait,DomainRoleTrait{
          * @param failure the failure closure to run if the predicate results false, this is defaulted to throw new EnforcerException("Access Denied")
          * @param success the success closure to run if  the predicate results true, this is defaulted to return true
          */
-    def enforce(Closure predicate, Closure failure = { throw new EnforcerException("Access Denied") }, Closure success = { return true }) {
+    def enforce(
+            @DelegatesTo(EnforcerService)Closure predicate,
+            @DelegatesTo(EnforcerService)Closure failure = { throw new EnforcerException("Access Denied") },
+            @DelegatesTo(EnforcerService)Closure success = { return true }) {
 
         if (Environment.current != Environment.TEST || grailsApplication.config.enforcer.enabled) {
             predicate.delegate = this
