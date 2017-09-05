@@ -90,3 +90,6 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
         '/**/favicon.ico': ['permitAll']
 ]
 
+test.number = 4
+test.list = [3,2,1]
+test.map = [three:3,two:2,one:1]
