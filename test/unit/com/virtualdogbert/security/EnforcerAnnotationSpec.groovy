@@ -1,26 +1,24 @@
 package com.virtualdogbert.security
 
-import com.security.DomainRole
-import com.security.Role
-import com.security.Sprocket
-import com.security.User
-import com.security.UserRole
+import com.security.*
 import com.virtualdogbert.ast.Enforce
 import com.virtualdogbert.ast.EnforcerException
-import grails.test.mixin.Mock
+import com.virtualdogbert.ast.MockDomains
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 
-@Mock([Role, User, UserRole, DomainRole, Sprocket])
+//@Mock([Role, User, UserRole, DomainRole, Sprocket])
 @TestFor(EnforcerService)
 class EnforcerAnnotationSpec extends Specification {
 
     User testUser, testUser2
 
+    @MockDomains
     def setup() {
+        //mockDomains Role, User, UserRole, DomainRole, Sprocket
         def adminRole = new Role('ROLE_ADMIN').save(flush: true, failOnError: true)
                 def userRole = new Role('ROLE_USER').save(flush: true, failOnError: true)
                 testUser = new User(username: 'me', password: 'password').save(flush: true, failOnError: true)
@@ -33,6 +31,7 @@ class EnforcerAnnotationSpec extends Specification {
 
                 service.springSecurityService = new Expando()
                 service.springSecurityService.getCurrentUser = { -> testUser }
+
 
                 //This enables Enforcer for unit tests because it is turned off by default.
                 grailsApplication.config.enforcer.enabled = true
